@@ -1,6 +1,6 @@
-set +e
+set -e
 
-g++ hello.cpp -fno-stack-protector -o -no-pie hello
+gcc hello.c -fno-stack-protector -no-pie -z execstack -o hello
 # g++ hello.cpp -o hello
 
 chmod u+x hello

