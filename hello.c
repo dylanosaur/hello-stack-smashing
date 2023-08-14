@@ -5,7 +5,7 @@
 int main(int argc, char* argv[])
 {
 
-    char buffer[4];
+    char buffer[32];
     strcpy(buffer, argv[1]);
     printf("%s\n", buffer);
     return 0;
